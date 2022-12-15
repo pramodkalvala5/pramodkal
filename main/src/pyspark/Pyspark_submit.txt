@@ -1,0 +1,1 @@
+spark-submit --executor-memory 845M --master local[*] C:\Users\pramod\Desktop\Sayari\Sayari_Spark_Problem.py

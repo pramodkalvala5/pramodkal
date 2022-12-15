@@ -6,6 +6,9 @@ spark = SparkSession.builder.appName('Sayari_Spark_Problem'
         ).config('spark.driver.host', 'localhost').getOrCreate()
 
 if __name__ == '__main__':
+
+# update the HDFS location based on your file location
+
     ofac_df = spark.read.json('hdfs://localhost:9000/tmp/ofac.jsonl')
     ofac_df.createOrReplaceTempView('ofac_df_table')
     ofac_df_v1 = \
