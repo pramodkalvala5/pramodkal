@@ -47,7 +47,7 @@ class Solution {
 //All ‘L’s indices in end are smaller or equal to their indices in start and all ‘R’s indices in end are greater or equal to their indices in start
   
     //RXXLRXRXL
-  def canTransform(start: String, end: String) = {
+  def canTransform(start: String, end: String): Boolean= {
     val sv = start.zipWithIndex
     println(s"value of sv with zipWithIndex is  $sv")
     val sv_filter = sv.filterNot(_._1 == 'X')
@@ -60,9 +60,9 @@ class Solution {
     println(s"value of ev length is  $ev_length")
     val test = (sv_filter zip ev)
     println(s"value of sv_filter zip ev is  $test")
-    (sv_filter zip ev).foreach {
-      case (('L', i1), ('L', i2)) => println(s"value of L's $i1 & $i2")
-      case (('R', i1), ('R', i2)) => println(s"value of R's $i1 & $i2")
+    // (sv_filter zip ev).foreach {
+      // case (('L', i1), ('L', i2)) => println(s"value of L's $i1 & $i2")
+      // case (('R', i1), ('R', i2)) => println(s"value of R's $i1 & $i2")
         start.length == end.length && sv_filter.length == ev.length &&
           (sv_filter zip ev).forall {
             case (('L', i1), ('L', i2)) => i1 >= i2
@@ -71,9 +71,9 @@ class Solution {
           }
     }
 
-  }
+}
 
-  }
+  
 
 object Solution {
   def main(args: Array[String]): Unit = {
