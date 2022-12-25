@@ -1,0 +1,75 @@
+import org.apache.spark.sql._
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions._
+import scala.collection.Map
+import org.apache.log4j.{Level, LogManager, Logger}
+import org.apache.spark.sql.SparkSession
+
+class CalculateScoreStudents {
+  System.setProperty("hadoop.home.dir", "C:\\hadoop")
+  private val spark: SparkSession = SparkSession.builder
+    .appName("CalculateScore")
+    .master("local[*]")
+    .getOrCreate()
+  import spark.implicits._
+  val log: Logger = LogManager.getRootLogger
+  log.setLevel(Level.WARN)
+
+
+  //Map[String, Float]
+  private def averageScorePerSubject(x:List[(String, String, Int)]): Map[String, Float] = {
+    val df = x.toDF("firstname", "Subject name", "Score")
+    val windowSpec = Window.partitionBy($"firstname")
+    val df1 = df.withColumn("average", avg($"Score").over(windowSpec))
+    val df2 = df1.selectExpr("firstname", "cast(average as Float) average").distinct()
+    //df2.show()
+    val result = df2.as[(String, Float)].rdd.collectAsMap()
+    result
+  }
+
+  //this method returns the highest score and related to student name list per subject
+  //the first position is subject name, second position is the highest score for that subject and
+  //the third position is first name list
+  //List[(String, Int, List[String])]
+  private def highestScoreAndStudentNamePerSubject(x: List[(String, String, Int)]): List[(String, Int, List[String])]  = {
+    val df = x.toDF("firstname", "Subjectname", "Score")
+    val windowSpec = Window.partitionBy($"Subjectname").orderBy($"Score" desc)
+    val df1 = df.withColumn("highestScore", rank().over(windowSpec)).filter(col("highestScore") === 1)
+    val df2 = df1.selectExpr("Subjectname","Score","firstname")
+    val df3 = df2.selectExpr("Subjectname","cast(Score as Int) Score",
+      "(collect_list(firstname) over (partition by Subjectname))  firstname").distinct()
+    //df3.show(false)
+    val result = df3.as[(String, Int, List[String])].collect().toList
+    result
+  }
+}
+
+object CalculateScoreStudents
+{
+  def main(args: Array[String]): Unit =
+  {
+    val x = new CalculateScoreStudents
+    val scores = List(
+      ("Andrew", "Math", 90),
+      ("Andrew", "English", 99),
+      ("Andrew", "Spanish", 80),
+      ("Max", "Math", 100),
+      ("Max", "English", 100),
+      ("Max", "Spanish", 100),
+      ("Karen", "Math", 100),
+      ("Karen", "English", 90),
+      ("Karen", "Spanish", 100),
+      ("Ted", "Math", 80),
+      ("Ted", "Spanish", 100),
+      ("Katie", "English", 100),
+      ("Katie", "Spanish", 100),
+      ("Julie", "Pe", 92)
+    )
+    val y = x.averageScorePerSubject(scores)
+    val z = x.highestScoreAndStudentNamePerSubject(scores)
+    println(y)
+    println(z)
+
+
+  }
+}
